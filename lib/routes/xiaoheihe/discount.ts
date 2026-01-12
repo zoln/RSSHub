@@ -1,5 +1,6 @@
-import { Route } from '@/types';
+import type { Route } from '@/types';
 import ofetch from '@/utils/ofetch';
+
 import { calculate } from './util';
 
 export const route: Route = {
@@ -19,8 +20,8 @@ export const route: Route = {
     maintainers: ['tssujt'],
     handler,
     description: `| PC  | Switch  | PSN   | Xbox |
-  | ----- | ------ | ----- | ----- |
-  | pc    | switch | psn   | xbox  |`,
+| ----- | ------ | ----- | ----- |
+| pc    | switch | psn   | xbox  |`,
 };
 
 const PLATFORM_MAP = {

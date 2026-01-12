@@ -1,6 +1,7 @@
-import got from '@/utils/got';
-import { toTitleCase } from '@/utils/common-utils';
 import { load } from 'cheerio';
+
+import { toTitleCase } from '@/utils/common-utils';
+import got from '@/utils/got';
 
 const handler = async (ctx) => {
     let type = 'new-releases';
@@ -28,7 +29,7 @@ const handler = async (ctx) => {
     const data = response.body;
 
     const $ = load(data);
-    const list = $('.list_products > li').get().slice(0, 10);
+    const list = $('.list_products > li').toArray().slice(0, 10);
 
     const result = list.map((item) => {
         const $ = load(item);

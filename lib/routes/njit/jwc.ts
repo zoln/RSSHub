@@ -1,7 +1,8 @@
-import { Route } from '@/types';
+import { load } from 'cheerio';
+
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import { load } from 'cheerio';
 import { parseDate } from '@/utils/parse-date';
 
 const host = 'https://jwc.njit.edu.cn';
@@ -41,18 +42,17 @@ async function handler(ctx) {
 
     const urlList = $('body')
         .find('ul li span a')
-        .map((i, e) => $(e).attr('href'))
-        .get();
+        .map((e) => $(e).attr('href'));
 
     const titleList = $('body')
         .find('ul li span a')
-        .map((i, e) => $(e).attr('title'))
-        .get();
+        .toArray()
+        .map((e) => $(e).attr('title'));
 
     const dateList = $('body')
         .find('span.date')
-        .map((i, e) => $(e).text())
-        .get();
+        .toArray()
+        .map((e) => $(e).text());
 
     const out = await Promise.all(
         urlList.map((itemUrl, index) => {

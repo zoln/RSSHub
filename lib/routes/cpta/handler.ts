@@ -1,8 +1,9 @@
-import { DataItem, Route } from '@/types';
+import { load } from 'cheerio';
+import pMap from 'p-map';
+
+import type { DataItem, Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import { load } from 'cheerio';
-import asyncPool from 'tiny-async-pool';
 
 type NewsCategory = {
     title: string;
@@ -25,8 +26,8 @@ const NEWS_TYPES: Record<string, NewsCategory> = {
     },
 };
 
-const handler: Route['handler'] = async (context) => {
-    const category = context.req.param('category');
+const handler: Route['handler'] = async (ctx) => {
+    const category = ctx.req.param('category');
     const BASE_URL = NEWS_TYPES[category].baseUrl;
     // Fetch the index page
     const { data: listResponse } = await got(BASE_URL);
@@ -50,7 +51,7 @@ const handler: Route['handler'] = async (context) => {
                 link: absoluteLink,
             };
         })
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .toSorted((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 10);
 
     const fetchDataItem = (item: { title: string; date: string; link: string }) =>
@@ -77,11 +78,7 @@ const handler: Route['handler'] = async (context) => {
             } as DataItem;
         });
 
-    const dataItems: DataItem[] = [];
-
-    for await (const item of await asyncPool(1, contentLinkList, fetchDataItem)) {
-        dataItems.push(item as DataItem);
-    }
+    const dataItems: DataItem[] = await pMap(contentLinkList, fetchDataItem, { concurrency: 1 });
 
     return {
         title: `中国人事考试网-${NEWS_TYPES[category].title}`,

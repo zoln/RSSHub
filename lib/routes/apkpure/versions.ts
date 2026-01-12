@@ -1,5 +1,6 @@
-import { Route } from '@/types';
 import { load } from 'cheerio';
+
+import type { Route } from '@/types';
 import logger from '@/utils/logger';
 import { parseDate } from '@/utils/parse-date';
 import puppeteer from '@/utils/puppeteer';
@@ -39,7 +40,7 @@ async function handler(ctx) {
     });
 
     const r = await page.evaluate(() => document.documentElement.innerHTML);
-    browser.close();
+    await browser.close();
 
     const $ = load(r);
     const img = new URL($('.ver-top img').attr('src'));

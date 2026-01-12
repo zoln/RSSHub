@@ -1,7 +1,8 @@
-import { Route } from '@/types';
+import { load } from 'cheerio';
+
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import { load } from 'cheerio';
 import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
 
@@ -24,8 +25,8 @@ export const route: Route = {
     maintainers: ['ShuiHuo'],
     handler,
     description: `| 政务公开 | 政务新闻 | 茂南动态 | 重大会议 | 公告公示 | 招录信息 | 政策解读 |
-  | :------: | :------: | :------: | :------: | :------: | :------: | :------: |
-  |   zwgk   |   zwxw   |   mndt   |   zdhy   |   tzgg   |   zlxx   |   zcjd   |`,
+| :------: | :------: | :------: | :------: | :------: | :------: | :------: |
+|   zwgk   |   zwxw   |   mndt   |   zdhy   |   tzgg   |   zlxx   |   zcjd   |`,
 };
 
 async function handler(ctx) {

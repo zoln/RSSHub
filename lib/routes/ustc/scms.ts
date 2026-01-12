@@ -1,7 +1,8 @@
-import { Route } from '@/types';
+import { load } from 'cheerio';
+
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import { load } from 'cheerio';
 import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
 // import InvalidParameterError from '@/errors/types/invalid-parameter';
@@ -39,8 +40,8 @@ export const route: Route = {
     handler,
     url: 'scms.ustc.edu.cn/',
     description: `| 院内新闻 | 通知公告 | 科研动态 | 学术活动 | 其他 |
-  | -------- | -------- | -------- | -------- | -------- |
-  | ynxw     | tzgg     | kydt     | xshd     | 自定义id  |`,
+| -------- | -------- | -------- | -------- | -------- |
+| ynxw     | tzgg     | kydt     | xshd     | 自定义id  |`,
 };
 
 async function handler(ctx) {

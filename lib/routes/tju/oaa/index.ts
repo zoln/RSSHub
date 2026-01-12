@@ -1,10 +1,11 @@
-import { Route } from '@/types';
+import { load } from 'cheerio';
+
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import { load } from 'cheerio';
-import { finishArticleItem } from '@/utils/wechat-mp';
 import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
+import { finishArticleItem } from '@/utils/wechat-mp';
 
 const oaa_base_url = 'http://oaa.tju.edu.cn/';
 const repo_url = 'https://github.com/DIYgod/RSSHub/issues';
@@ -40,8 +41,8 @@ export const route: Route = {
     maintainers: ['AlanZeng423', 'AmosChenYQ', 'SuperPung'],
     handler,
     description: `| News | Notification |
-  | :--: | :----------: |
-  | news | notification |`,
+| :--: | :----------: |
+| news | notification |`,
 };
 
 async function handler(ctx) {
@@ -89,7 +90,8 @@ async function handler(ctx) {
     } else {
         const $ = load(response.data);
         const list = $('.notice_l > ul > li > dl > dt')
-            .map((_index, item) => {
+            .toArray()
+            .map((item) => {
                 const href = $('a', item).attr('href');
                 const type = pageType(href);
                 return {
@@ -98,8 +100,7 @@ async function handler(ctx) {
                     pubDate: timezone(parseDate($('.fl_01_r_time', item).text(), 'DDYYYY-MM'), +8),
                     type,
                 };
-            })
-            .get();
+            });
 
         const items = await Promise.all(
             list.map((item) => {

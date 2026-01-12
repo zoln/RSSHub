@@ -1,8 +1,9 @@
-import { Route } from '@/types';
+import querystring from 'node:querystring';
+import * as url from 'node:url';
+
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import * as url from 'node:url';
-import querystring from 'querystring';
 
 const baseUrl = 'http://jw.scut.edu.cn';
 const refererUrl = baseUrl + '/dist/';
@@ -69,8 +70,8 @@ export const route: Route = {
     maintainers: ['imkero', 'Rongronggg9'],
     handler,
     description: `| 全部 | 选课   | 考试 | 信息 |
-  | ---- | ------ | ---- | ---- |
-  | all  | course | exam | info |`,
+| ---- | ------ | ---- | ---- |
+| all  | course | exam | info |`,
 };
 
 async function handler(ctx) {

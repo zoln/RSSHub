@@ -1,11 +1,12 @@
-import { Route } from '@/types';
+import { load } from 'cheerio';
+
+import { config } from '@/config';
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import ofetch from '@/utils/ofetch';
 import { parseDate, parseRelativeDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
-import { load } from 'cheerio';
 import { fetchArticle } from '@/utils/wechat-mp';
-import { config } from '@/config';
 
 const configs = {
     all: {
@@ -58,8 +59,8 @@ export const route: Route = {
     maintainers: ['tgly307', 'zengxs'],
     handler,
     description: `| [综合资讯][osc_gen] | [软件更新资讯][osc_proj] | [行业资讯][osc_ind] | [编程语言资讯][osc_pl] |
-  | ------------------- | ------------------------ | ------------------- | ---------------------- |
-  | industry            | project                  | industry-news       | programming            |
+| ------------------- | ------------------------ | ------------------- | ---------------------- |
+| industry            | project                  | industry-news       | programming            |
 
   订阅 [全部板块资讯][osc_all] 可以使用 [https://rsshub.app/oschina/news](https://rsshub.app/oschina/news)
 

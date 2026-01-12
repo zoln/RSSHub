@@ -1,7 +1,9 @@
-import { Route } from '@/types';
+import { load } from 'cheerio';
+
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import { load } from 'cheerio';
+
 import util from './utils';
 
 export const route: Route = {
@@ -21,8 +23,8 @@ export const route: Route = {
     maintainers: ['Shujakuinkuraudo'],
     handler,
     description: `| 学院公告 | 学院新闻 | 学生资讯 |
-  | -------- | -------- | -------- |
-  | xygg     | xyxw     | xszx     |`,
+| -------- | -------- | -------- |
+| xygg     | xyxw     | xszx     |`,
 };
 
 async function handler(ctx) {
@@ -54,7 +56,7 @@ async function handler(ctx) {
 
     const $ = load(response.data);
 
-    const list = $('span a').get();
+    const list = $('span a').toArray();
 
     const result = await util.ProcessFeed(list, cache);
 

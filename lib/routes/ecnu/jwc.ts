@@ -1,7 +1,8 @@
-import { Route } from '@/types';
+import { load } from 'cheerio';
+
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import { load } from 'cheerio';
 import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
 
@@ -29,12 +30,12 @@ export const route: Route = {
         const response = await got(`${baseUrl}tzggwwxsgg/list.htm`);
         const $ = load(response.data);
         const links = $('.col_news_con ul.news_list > li')
-            .map((_, el) => ({
+            .toArray()
+            .map((el) => ({
                 pubDate: timezone(parseDate($(el).find('.news_date').text()), 8),
                 link: new URL($(el).find('a').attr('href'), baseUrl).toString(),
                 title: $(el).find('a').text(),
-            }))
-            .get();
+            }));
         const items = await Promise.all(
             links.map((item) =>
                 cache.tryGet(item.link, async () => {

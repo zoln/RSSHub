@@ -1,10 +1,11 @@
-import { Route } from '@/types';
+import { load } from 'cheerio';
+
+import InvalidParameterError from '@/errors/types/invalid-parameter';
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import { load } from 'cheerio';
 import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
-import InvalidParameterError from '@/errors/types/invalid-parameter';
 
 const map = new Map([
     ['tzgg', { title: '中国科学技术大学电子工程与信息科学系 - 通知公告', id: '2702' }],
@@ -37,8 +38,8 @@ export const route: Route = {
     handler,
     url: 'eeis.ustc.edu.cn/',
     description: `| 通知公告 | 新闻信息 |
-  | -------- | -------- |
-  | tzgg     | xwxx     |`,
+| -------- | -------- |
+| tzgg     | xwxx     |`,
 };
 
 async function handler(ctx) {

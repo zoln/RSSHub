@@ -1,4 +1,7 @@
 import { load } from 'cheerio';
+
+import logger from '@/utils/logger';
+
 import getIllustDetail from '../../api/get-illust-detail';
 import pixivUtils from '../../utils';
 

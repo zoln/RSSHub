@@ -1,9 +1,10 @@
-import { Route } from '@/types';
+import { load } from 'cheerio';
+
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import { load } from 'cheerio';
-import { finishArticleItem } from '@/utils/wechat-mp';
 import { parseDate } from '@/utils/parse-date';
+import { finishArticleItem } from '@/utils/wechat-mp';
 
 const baseUrl = 'https://nsd.pku.edu.cn/sylm/gd/';
 
@@ -50,7 +51,8 @@ async function handler() {
 
     const $ = load(response.data);
     const list = $('div.maincontent > ul > li')
-        .map((_index, item) => {
+        .toArray()
+        .map((item) => {
             const href = $(item).find('a').attr('href');
             const type = pageType(href);
             return {
@@ -59,8 +61,7 @@ async function handler() {
                 pubDate: parseDate($(item).find('span').first().text(), 'YYYY-MM-DD'),
                 type,
             };
-        })
-        .get();
+        });
 
     const items = await Promise.all(
         list.map((item) => {

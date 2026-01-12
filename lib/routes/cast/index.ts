@@ -1,9 +1,11 @@
-import { Route } from '@/types';
+import { load } from 'cheerio';
+
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import { load } from 'cheerio';
 import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
+
 const baseUrl = 'https://www.cast.org.cn';
 
 async function parsePage(html: string) {
@@ -64,15 +66,15 @@ export const route: Route = {
   在路由末尾处加上 \`?limit=限制获取数目\` 来限制获取条目数量，默认值为\`10\`
 :::
 
-  | 分类     | 编码 |
-  | -------- | ---- |
-  | 全景科协 | qjkx |
-  | 智库     | zk   |
-  | 学术     | xs   |
-  | 科普     | kp   |
-  | 党建     | dj   |
-  | 数据     | sj   |
-  | 新闻     | xw   |`,
+| 分类     | 编码 |
+| -------- | ---- |
+| 全景科协 | qjkx |
+| 智库     | zk   |
+| 学术     | xs   |
+| 科普     | kp   |
+| 党建     | dj   |
+| 数据     | sj   |
+| 新闻     | xw   |`,
 };
 
 async function handler(ctx) {
@@ -94,7 +96,7 @@ async function handler(ctx) {
     } else {
         const buildUnitScript = $('script[parseType="bulidstatic"]');
         const queryUrl = `${baseUrl}${buildUnitScript.attr('url')}`;
-        const queryData = JSON.parse(buildUnitScript.attr('querydata')?.replace(/'/g, '"') ?? '{}');
+        const queryData = JSON.parse(buildUnitScript.attr('querydata')?.replaceAll("'", '"') ?? '{}');
         queryData.paramJson = `{"pageNo":1,"pageSize":${limit}}`;
 
         const { data } = await got.get<{ data: { html: string } }>(queryUrl, {

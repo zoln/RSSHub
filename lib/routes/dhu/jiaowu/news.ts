@@ -1,8 +1,9 @@
-import { Route } from '@/types';
-import got from '@/utils/got';
 import { load } from 'cheerio';
-import { parseDate } from '@/utils/parse-date';
+
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
+import got from '@/utils/got';
+import { parseDate } from '@/utils/parse-date';
 
 const baseUrl = 'https://jw.dhu.edu.cn';
 
@@ -29,8 +30,8 @@ export const route: Route = {
     maintainers: ['KiraKiseki'],
     handler,
     description: `| 学生专栏 | 教师专栏 | 选课专栏（仅选课期间开放） | 辅修专业 |
-  | -------- | -------- | -------- | -------- |
-  | student  | teacher  | class    | fxzy     |`,
+| -------- | -------- | -------- | -------- |
+| student  | teacher  | class    | fxzy     |`,
 };
 
 async function handler(ctx) {

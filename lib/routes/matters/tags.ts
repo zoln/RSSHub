@@ -23,7 +23,7 @@ const getTagId = (tid: string) =>
             .find(([key]) => key.startsWith('node'))
             ?.pop() as Tag;
 
-        return node?.id.split(':')[1];
+        return node?.id.split(':', 2)[1];
     });
 
 const handler = async (ctx) => {
@@ -35,7 +35,7 @@ const handler = async (ctx) => {
     const gqlResponse = await ofetch(gqlEndpoint, {
         method: 'POST',
         body: {
-            query: `{
+            query: /* GraphQL */ `{
                 node(input: {id: "${tagId}"}) {
                   ... on Tag {
                     content

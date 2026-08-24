@@ -8392,6 +8392,13 @@
   "/thoughtco/:category?": [
     "nczitzk"
   ],
+  "/threads/:user/:routeParams?": [
+    "ninboy",
+    "pseudoyu"
+  ],
+  "/threads/search/:keyword/:routeParams?": [
+    "TonyRL"
+  ],
   "/thunderbird/release": [
     "garywill"
   ],
@@ -11864,10 +11871,6 @@
   "/thepaper/sidebar/:sec?": [
     "bigfei"
   ],
-  "/threads/:user/:routeParams?": [
-    "ninboy",
-    "pseudoyu"
-  ],
   "/tmtpost/nictation": [
     "defp"
   ],
@@ -12206,6 +12209,9 @@
   ],
   "/finology/tag/:topic": [
     "Rjnishant530"
+  ],
+  "/ryo.lu/journal/:lang?": [
+    "TonyRL"
   ],
   "/taptap/topic/:id/:type?/:sort?/:lang?": [
     "hoilc",

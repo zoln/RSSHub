@@ -70,6 +70,6 @@ export default defineConfig({
         },
     },
     test: {
-        include: ['lib/**/*.worker.test.ts', 'tests/**/*.worker.test.ts', 'lib/utils/parse-script-data.test.ts', 'lib/utils/parse-date-in-timezone.test.ts', 'tests/source-date-routes.test.ts'],
+        include: ['lib/**/*.worker.test.ts', 'tests/**/*.worker.test.ts', 'lib/utils/parse-script-data.test.ts', 'lib/utils/parse-date-in-timezone.test.ts', 'tests/source-date-routes.test.ts', 'tests/cache-coordination.test.ts'],
     },
 });

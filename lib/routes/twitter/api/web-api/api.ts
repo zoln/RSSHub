@@ -15,6 +15,15 @@ const getUserResult = (response: any) => {
         throw new Error(`Twitter API user lookup failed${codes.length ? ` (codes: ${codes.join(', ')})` : ''}`);
     }
 
+    // Some third-party providers return errors with HTTP 200 outside GraphQL.
+    const code = response?.code;
+    if (Number.isSafeInteger(code) && code >= 400) {
+        if (code === 404 && response.message === 'User not found') {
+            throw new InvalidParameterError('Twitter API could not find this user');
+        }
+        throw new Error(`Twitter API user lookup failed (code: ${code})`);
+    }
+
     const user = response?.data?.user;
     if (user === null || user?.result === null) {
         throw new InvalidParameterError("This account doesn't exist");

@@ -115,6 +115,7 @@ describe('http cache module', () => {
         await expect(cache.globalCache.get('route/key')).resolves.toBe('route-cache');
 
         expect(cache.status.available).toBe(true);
+        expect(cache.globalCache.supportsAtomicClaims).toBe(false);
         expect(urls[0]).not.toContain('?refresh=1');
     });
 

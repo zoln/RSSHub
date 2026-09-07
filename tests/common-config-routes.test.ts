@@ -16,7 +16,7 @@ const fixtures = [
         params: { department: 'bmwj' },
         html: '<div class="channel_tab"><div class="noline"><a>部门文件</a></div></div><div class="news_box"><div class="list"><ul><li><h4><a href="/policy">政策正文</a><span class="date">2025-01-01</span></h4></li><li class="line">separator</li></ul></div></div>',
         title: '部门文件 - 政府文件库',
-        item: { title: '政策正文', link: '/policy', pubDate: new Date(2025, 0, 1) },
+        item: { title: '政策正文', link: '/policy', pubDate: new Date('2025-01-01T00:00:00Z') },
     },
     {
         name: 'Polimi',

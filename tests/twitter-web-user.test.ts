@@ -71,6 +71,9 @@ describe('Twitter web user lookup', () => {
         [{ ...user, errors: [{ code: 89 }] }, 'Twitter API user lookup failed (codes: 89)'],
         [{ errors: [{ message: 'Private upstream details' }] }, 'Twitter API user lookup failed'],
         [{ errors: { message: 'Malformed errors' } }, 'Twitter API user lookup failed'],
+        [{ code: 500, message: 'Private provider error details' }, 'Twitter API user lookup failed (code: 500)'],
+        [{ code: 404, message: 'Unrecognized provider error' }, 'Twitter API user lookup failed (code: 404)'],
+        [{ code: 429, message: 'Private rate-limit details' }, 'Twitter API user lookup failed (code: 429)'],
         [{ data: {} }, 'Twitter API returned an incomplete user response'],
         [{ data: { user: {} } }, 'Twitter API returned an incomplete user response'],
         [{ data: { user: { result: { __typename: 'User' } } } }, 'Twitter API returned an incomplete user response'],
@@ -99,6 +102,15 @@ describe('Twitter web user lookup', () => {
         vi.mocked(twitterGot).mockResolvedValueOnce(response);
         await expect(api.getUser('example')).rejects.toThrow(new InvalidParameterError(message));
         expect(cached.size).toBe(0);
+    });
+
+    it('classifies the observed HTTP-200 provider not-found envelope without caching it', async () => {
+        config.twitter.thirdPartyApi = 'https://api.example.com';
+        vi.mocked(ofetch).mockResolvedValueOnce({ code: 404, message: 'User not found' });
+        await expect(api.getUser('example')).rejects.toThrow(new InvalidParameterError('Twitter API could not find this user'));
+        expect(cached.size).toBe(0);
+        expect(cache.set).not.toHaveBeenCalled();
+        expect(twitterGot).not.toHaveBeenCalled();
     });
 
     it('retries normally after a GraphQL error and accepts an empty errors array', async () => {

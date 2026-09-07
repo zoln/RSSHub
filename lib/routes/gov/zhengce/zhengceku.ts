@@ -1,6 +1,6 @@
 import type { Route } from '@/types';
 import buildData from '@/utils/common-config';
-import { parseDate } from '@/utils/parse-date';
+import { parseDateInTimezone } from '@/utils/parse-date-in-timezone';
 
 export const route: Route = {
     path: '/zhengceku/:department',
@@ -33,7 +33,8 @@ async function handler(ctx) {
             item: '.news_box > .list > ul > li:not(.line)',
             title: ($) => $('h4 > a').text(),
             link: ($) => $('h4 > a').attr('href'),
-            pubDate: ($) => parseDate($('h4 > .date').text().trim()),
+            // The list provides calendar dates, represented at UTC midnight.
+            pubDate: ($) => parseDateInTimezone($('h4 > .date').text().trim(), 0),
         },
     });
 }

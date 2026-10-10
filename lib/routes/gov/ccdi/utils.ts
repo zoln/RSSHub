@@ -44,8 +44,8 @@ export const parseNewsList = async (url, selector, ctx) => {
         .map((item) => {
             const $item = $(item);
             return {
-                title: $item.find('a').first().text().trim(),
-                link: new URL($item.find('a').first().attr('href')!, url).href,
+                title: $item.find('a').text().trim(),
+                link: new URL($item.find('a').attr('href')!, url).href,
                 pubDate: parseDate($item.find('.more').text(), 'YYYY-MM-DD'),
             };
         });
@@ -58,16 +58,18 @@ export const parseNewsList = async (url, selector, ctx) => {
 const changeTrCookie = async () => {
     const cookies = await cookieJar.getCookies(rootUrl);
     const c = cookies.find((c) => c.key === 'HOY_TR');
-    if (c) {
-        const value = c.value;
-        const tr_array = value.split(',');
-        const csr = tr_array[0];
-        const cnv = [...tr_array[1]];
-        const otr = [...tr_array[2]];
-        otr[0] = csr.charAt(Number.parseInt(cnv[0], 16));
-        const nc = new Cookie({ key: 'HOY_TR', value: csr + ',' + cnv.join('') + ',' + otr.join('') + ',0' });
-        await cookieJar.setCookie(nc, rootUrl);
+    if (!c) {
+        return;
     }
+
+    const value = c.value;
+    const tr_array = value.split(',');
+    const csr = tr_array[0];
+    const cnv = [...tr_array[1]];
+    const otr = [...tr_array[2]];
+    otr[0] = csr.charAt(Number.parseInt(cnv[0], 16));
+    const nc = new Cookie({ key: 'HOY_TR', value: csr + ',' + cnv.join('') + ',' + otr.join('') + ',0' });
+    await cookieJar.setCookie(nc, rootUrl);
 };
 
 export const parseArticle = async (item) => {
@@ -81,14 +83,8 @@ export const parseArticle = async (item) => {
         item.author = title.match(/来源：(.*)发布时间/s)?.[1].trim() ?? owner;
         item.pubDate = timezone(parseDate(title.match(/发布时间：(.*)分享/s)?.[1].trim() ?? item.pubDate), 8);
 
-        // Change the img src from relative to absolute for a better compatibility
-        $('.content, .bom-box')
-            .find('img')
-            .each((_, el) => {
-                $(el).attr('src', new URL($(el).attr('src')!, item.link).href);
-                // oldsrc is causing freshrss imageproxy not to work correctly
-                $(el).removeAttr('oldsrc').removeAttr('alt');
-            });
+        // oldsrc is causing freshrss imageproxy not to work correctly
+        $('.content, .bom-box').find('img').removeAttr('oldsrc').removeAttr('alt');
         item.description = $('.content, .bom-box').html();
         return item;
     });

@@ -1,15 +1,12 @@
 import { load } from 'cheerio';
-import pMap from 'p-map';
 
 import type { ListingExtra } from '@/routes/temposmart/utils';
-import { clean, normalizeFloor, parseArea, parseHeavyFood, parseJpy, parseMonths, parseWalkMin, parseWard, summarize, tsuboUnit } from '@/routes/temposmart/utils';
+import { clean, normalizeFloor, parseArea, parseCondition, parseHeavyFood, parseJpy, parseMonths, parseWalkMin, parseWard, summarize, tsuboUnit } from '@/routes/temposmart/utils';
 import type { Data, DataItem, Route } from '@/types';
 import cache from '@/utils/cache';
-import logger from '@/utils/logger';
 import ofetch from '@/utils/ofetch';
 
 const HOST = 'https://www.temponw.com';
-const DETAIL_CONCURRENCY = 2;
 const PAGES = 2; // 10 cards per page
 
 /** Tokyo 23 wards as the site's `cities[]` codes (101 千代田区 … 123 江戸川区). */
@@ -30,7 +27,6 @@ interface DetailFields {
     status: string | null; // 現況 '空'
     contract: string | null; // 契約形態 '普通借家'
     term: string | null; // 契約期間 '3年'
-    industry_blocks: string[][]; // [適用業種, 特長, 立地]
     notes: string[]; // 備考 '不可業態： 重飲食不可／24時間営業不可'
 }
 
@@ -47,8 +43,8 @@ const parseList = (html: string): ListCard[] => {
         .toArray()
         .map((el): ListCard | null => {
             const $el = $(el);
-            const source = $el.find('input[name="source_system_code"]').first().attr('value');
-            const itemNo = $el.find('input[name="item_no"]').first().attr('value');
+            const source = $el.find('input[name="source_system_code"]').attr('value');
+            const itemNo = $el.find('input[name="item_no"]').attr('value');
             const title = clean($el.find('.result-content-title span').text());
             if (!source || !itemNo || !title) {
                 return null;
@@ -84,7 +80,7 @@ const parseList = (html: string): ListCard[] => {
             const [line, station] = (raw.station?.normalize('NFKC') ?? '').split(' ', 2);
             const rentJpy = parseJpy(raw.rent);
             const { tsubo, area_m2 } = parseArea(raw.area);
-            const image = $el.find('.result-content-img img').first().attr('src');
+            const image = $el.find('.result-content-img img').attr('src');
 
             return {
                 title,
@@ -136,15 +132,6 @@ const parseDetail = (html: string): DetailFields => {
         status: field('現況'),
         contract: field('契約形態'),
         term: field('契約期間'),
-        industry_blocks: $('.applicable-industry-items')
-            .toArray()
-            .map((block) =>
-                $(block)
-                    .find('.grey-div p')
-                    .toArray()
-                    .map((p) => clean($(p).text()))
-                    .filter((t): t is string => t !== null)
-            ),
         notes: $('.detail-note li')
             .toArray()
             .map((li) => clean($(li).text()))
@@ -153,29 +140,23 @@ const parseDetail = (html: string): DetailFields => {
 };
 
 const mergeDetail = (base: ListingExtra, d: DetailFields): ListingExtra => {
-    const [applicable = [], features = [], location = []] = d.industry_blocks;
     const restriction = clean(d.notes.find((n) => n.includes('不可業態'))?.replace(/^不可業態[:：]\s*/, ''));
-    const limitParts = [applicable.length > 0 ? `可: ${applicable.join('、')}` : null, restriction === null ? null : `不可: ${restriction}`].filter((p): p is string => p !== null);
     return {
         ...base,
         walk_min: parseWalkMin(d.access),
         fixtures_transfer_jpy: parseJpy(d.fixtures),
-        condition: features.includes('スケルトン') ? 'skeleton' : base.condition,
-        heavy_food_ok: parseHeavyFood(restriction) ?? (applicable.length > 0 ? applicable.includes('重飲食') : null),
-        business_limit: limitParts.length > 0 ? limitParts.join(' / ') : null,
-        tags: [...features, ...location],
+        // 現況 is a real field but is published as '-' throughout, so the PR blurb is the only place
+        // this site says 居抜き or スケルトン at all.
+        condition: parseCondition(d.status, base.raw.comment),
+        heavy_food_ok: parseHeavyFood(restriction),
+        business_limit: restriction === null ? null : `不可: ${restriction}`,
         raw: { ...base.raw, access: d.access, fixtures: d.fixtures, status: d.status, contract: d.contract, term: d.term, notes: d.notes.join(' / ') || null },
     };
 };
 
-/** A failed detail page keeps the list fields instead of breaking the feed. */
 const enrich = async (card: ListCard): Promise<ListingExtra> => {
-    try {
-        return mergeDetail(card.extra, parseDetail(await ofetch(card.link)));
-    } catch (error) {
-        logger.warn(`temponw: detail fetch failed for ${card.link}: ${String(error)}`);
-        return { ...card.extra, raw: { ...card.extra.raw, detail_error: String(error) } };
-    }
+    const html = await ofetch(card.link);
+    return mergeDetail(card.extra, parseDetail(html));
 };
 
 const listUrlFor = (area: string | undefined, page: number): string => {
@@ -198,12 +179,10 @@ export const handler = async (ctx): Promise<Data> => {
         throw new Error(`Unknown area "${area}", expected "tokyo" or none`);
     }
     const pages = await Promise.all(Array.from({ length: PAGES }, (_, i) => ofetch(listUrlFor(area, i + 1))));
-    const seen = new Set<string>();
-    const cards = pages.flatMap((html) => parseList(html)).filter((card) => (seen.has(card.link) ? false : seen.add(card.link)));
+    const cards = pages.flatMap((html) => parseList(html));
 
-    const items = await pMap(
-        cards,
-        (card) =>
+    const items = await Promise.all(
+        cards.map((card) =>
             cache.tryGet(card.link, async (): Promise<DataItem> => {
                 const extra = await enrich(card);
                 return {
@@ -215,8 +194,8 @@ export const handler = async (ctx): Promise<Data> => {
                     image: card.image,
                     _extra: extra,
                 };
-            }) as Promise<DataItem>,
-        { concurrency: DETAIL_CONCURRENCY }
+            })
+        )
     );
 
     return {
